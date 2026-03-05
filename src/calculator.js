@@ -1,11 +1,14 @@
 /**
  * Node.js CLI Calculator
  *
- * Supported operations (four basic arithmetic operations):
+ * Supported operations:
  *   - add        : Addition – adds two or more numbers
  *   - subtract   : Subtraction – subtracts numbers from the first operand
  *   - multiply   : Multiplication – multiplies numbers together
  *   - divide     : Division – divides the first number by the second (handles division by zero)
+ *   - modulo     : Modulo – returns the remainder of a divided by b (handles modulo by zero)
+ *   - power      : Exponentiation – raises base to the exponent
+ *   - sqrt       : Square root – returns the square root of n (handles negative numbers)
  *
  * Usage:
  *   node calculator.js <operation> <num1> <num2> [... more numbers]
@@ -15,6 +18,9 @@
  *   node calculator.js subtract 10 4
  *   node calculator.js multiply 5 6
  *   node calculator.js divide 20 4
+ *   node calculator.js modulo 10 3
+ *   node calculator.js power 2 8
+ *   node calculator.js sqrt 16
  */
 
 /**
@@ -51,8 +57,37 @@ function divide(nums) {
   return nums.reduce((quotient, n, i) => (i === 0 ? n : quotient / n));
 }
 
+/**
+ * Modulo – returns the remainder of a divided by b
+ * Throws an error if modulo by zero is attempted
+ */
+function modulo(a, b) {
+  if (b === 0) {
+    throw new Error("Modulo by zero is not allowed.");
+  }
+  return a % b;
+}
+
+/**
+ * Exponentiation – raises base to the exponent
+ */
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+
+/**
+ * Square root – returns the square root of n
+ * Throws an error if n is negative
+ */
+function squareRoot(n) {
+  if (n < 0) {
+    throw new Error("Square root of a negative number is not allowed.");
+  }
+  return Math.sqrt(n);
+}
+
 // Export functions for testing
-module.exports = { add, subtract, multiply, divide };
+module.exports = { add, subtract, multiply, divide, modulo, power, squareRoot };
 
 // CLI entry point – only runs when executed directly
 if (require.main === module) {
@@ -63,14 +98,15 @@ if (require.main === module) {
   // Validate that an operation was provided
   if (!operation) {
     console.error("Error: No operation provided.");
-    console.error("Usage: node calculator.js <add|subtract|multiply|divide> <num1> <num2> [...]");
+    console.error("Usage: node calculator.js <add|subtract|multiply|divide|modulo|power|sqrt> <num1> [num2] [...]");
     process.exit(1);
   }
 
-  // Validate that at least two numbers were provided
-  if (numbers.length < 2) {
+  // sqrt requires exactly one number; all others require at least two
+  const isSingleArgOp = operation.toLowerCase() === "sqrt";
+  if (!isSingleArgOp && numbers.length < 2) {
     console.error("Error: At least two numbers are required.");
-    console.error("Usage: node calculator.js <add|subtract|multiply|divide> <num1> <num2> [...]");
+    console.error("Usage: node calculator.js <add|subtract|multiply|divide|modulo|power|sqrt> <num1> [num2] [...]");
     process.exit(1);
   }
 
@@ -96,9 +132,18 @@ if (require.main === module) {
       case "divide":
         result = divide(numbers);
         break;
+      case "modulo":
+        result = modulo(numbers[0], numbers[1]);
+        break;
+      case "power":
+        result = power(numbers[0], numbers[1]);
+        break;
+      case "sqrt":
+        result = squareRoot(numbers[0]);
+        break;
       default:
         console.error(`Error: Unknown operation '${operation}'.`);
-        console.error("Supported operations: add, subtract, multiply, divide");
+        console.error("Supported operations: add, subtract, multiply, divide, modulo, power, sqrt");
         process.exit(1);
     }
     console.log(`Result: ${result}`);
